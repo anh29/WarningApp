@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Trạng thái khi EditText được focus -->
+    <item android:drawable="@drawable/edittext_bg_focused" android:state_focused="true"/>
+    <!-- Trạng thái mặc định của EditText -->
+    <item android:drawable="@drawable/edittext_bg_normal"/>
+</selector>
