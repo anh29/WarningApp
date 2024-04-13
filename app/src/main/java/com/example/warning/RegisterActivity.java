@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -165,14 +166,26 @@ public class RegisterActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(JSONObject result) {
             super.onPostExecute(result);
+            Log.e("RegisterUserTask", "Result: " + result.toString());
 
-            if (result != null) {
-                // Update UI based on successful registration
-                Toast.makeText(RegisterActivity.this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
-//                activity/\.finish(); // Close activity
-            } else {
-                // Handle registration failure
-                Toast.makeText(RegisterActivity.this, "Đăng ký thất bại!", Toast.LENGTH_SHORT).show();
+            try {
+                if (result.getBoolean("success")) {
+                    // Update UI based on successful registration
+                    Toast.makeText(RegisterActivity.this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
+
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                        }
+                    }, 1000);
+                } else {
+                    // Handle registration failure
+                    Toast.makeText(RegisterActivity.this, "Đăng ký thất bại!", Toast.LENGTH_SHORT).show();
+                }
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -186,8 +199,14 @@ public class RegisterActivity extends AppCompatActivity {
         } else if (TextUtils.isEmpty(phone)) {
             utilService.showSnackBar(view, "Vui lòng nhập số điện thoại...");
             isValid = false;
+        } else if (!isValidPhoneNumber(phone)) {
+            utilService.showSnackBar(view, "Số điện thoại không hợp lệ. Vui lòng nhập lại.");
+            isValid = false;
         } else if (TextUtils.isEmpty(password)) {
             utilService.showSnackBar(view, "Vui lòng nhập mật khẩu...");
+            isValid = false;
+        } else if (!isValidPassword(password)) {
+            utilService.showSnackBar(view, "Mật khẩu không hợp lệ. Mật khẩu cần ít nhất 8 ký tự và chứa ít nhất một chữ cái viết hoa, một chữ cái viết thường và một số.");
             isValid = false;
         } else if (TextUtils.isEmpty(address)) {
             utilService.showSnackBar(view, "Vui lòng nhập địa chỉ...");
@@ -196,4 +215,15 @@ public class RegisterActivity extends AppCompatActivity {
 
         return isValid;
     }
+
+    private boolean isValidPhoneNumber(String phoneNumber) {
+        // Kiểm tra số điện thoại có chứa ít nhất 10 chữ số không
+        return phoneNumber.length() == 10 && phoneNumber.matches("[0-9]+");
+    }
+
+    private boolean isValidPassword(String password) {
+        // Kiểm tra mật khẩu có ít nhất 8 ký tự, chứa ít nhất một chữ cái viết hoa, một chữ cái viết thường và một số không
+        return password.length() >= 8 && password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$");
+    }
+
 }
