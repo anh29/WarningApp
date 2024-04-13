@@ -14,6 +14,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -21,8 +23,10 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.warning.UtilsService.UtilService;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +37,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.BufferedSink;
 
 public class RegisterActivity extends AppCompatActivity {
     private Button btnRegister;
@@ -110,26 +115,29 @@ public class RegisterActivity extends AppCompatActivity {
             Log.d("RegisterUserTask", "Phone: " + this.phone);
             Log.d("RegisterUserTask", "Password: " + this.password);
 
-            String json = "{\"name\":\"pppppp\",\"phone\":\"000000\",\"password\":\"pppppp\",\"address\":\"000000\"}";
-//            RequestBody body = new FormBody.Builder()
-//                    .add("name", this.name)
-//                    .add("phone", this.phone)
-//                    .add("password", this.password)
-//                    .add("address", this.address)
-//                    .build();
+            JSONObject jsonObject;
+            try {
+                jsonObject = new JSONObject()
+                        .put("name", this.name)
+                        .put("phone", this.phone)
+                        .put("password", this.password)
+                        .put("address", this.address);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
             RequestBody body = RequestBody.create(
-                    MediaType.parse("application/json"), json);
+                    MediaType.parse("application/json"), jsonObject.toString());
 
             Request request = new Request.Builder()
                     .url(url)
                     .post(body)
+                    .addHeader("Content-Type", "application/json")
                     .build();
 
             OkHttpClient client = new OkHttpClient();
 
             Call call = client.newCall(request);
             Log.e("RegisterUserTask", "Request: " + request);
-            Log.e("RegisterUserTask", "Request body: " + request.body()..toString());
 
             try {
                 Response response = call.execute();
